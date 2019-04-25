@@ -77,8 +77,8 @@ bool can_open(int com)
 
 void can_close()
 {
-	can_del_send_msg();
-	can_unmonitor_msg();
+	can_del_all_send_msg();
+	can_unmonitor_all_msg();
 	Sleep(100);
 	can_com.ClosePort();
 	flag_thread_finish = true;
@@ -98,8 +98,8 @@ bool can_is_ready()
 
 bool can_reset()
 {
-	bool flag1 = can_del_send_msg();
-	bool flag2 = can_unmonitor_msg();
+	bool flag1 = can_del_all_send_msg();
+	bool flag2 = can_unmonitor_all_msg();
 	return flag1 & flag2;
 }
 
@@ -117,7 +117,7 @@ bool can_del_send_msg(int id)
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_del_send_msg()
+bool can_del_all_send_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx all &");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
@@ -129,13 +129,13 @@ bool can_monitor_msg(int id)
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_monitor_msg()
+bool can_monitor_all_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor all &");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_unmonitor_msg()
+bool can_unmonitor_all_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can unmonitor all &");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);

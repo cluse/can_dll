@@ -10,15 +10,15 @@ extern"C" __declspec(dllexport) bool can_reset();
 
 extern"C" __declspec(dllexport) bool can_send_msg(struct CAN_DATA *pCan);
 
-//extern"C" __declspec(dllexport) bool can_del_send_msg(int id);
+extern"C" __declspec(dllexport) bool can_del_send_msg(int id);
 
-extern"C" __declspec(dllexport) bool can_del_send_msg();
+extern"C" __declspec(dllexport) bool can_del_all_send_msg();
 
-//extern"C" __declspec(dllexport) bool can_monitor_msg(int id);
+extern"C" __declspec(dllexport) bool can_monitor_msg(int id);
 
-extern"C" __declspec(dllexport) bool can_monitor_msg();
+extern"C" __declspec(dllexport) bool can_monitor_all_msg();
 
-extern"C" __declspec(dllexport) bool can_unmonitor_msg();
+extern"C" __declspec(dllexport) bool can_unmonitor_all_msg();
 
 extern"C" __declspec(dllexport) bool can_output_tx_msg();
 
