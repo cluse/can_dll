@@ -200,24 +200,24 @@ static int long_to_dec_buf(char *buf,unsigned long val)
   return num;
 }
 
-unsigned long char_to_long(char val)
+static unsigned long char_to_long(char val)
 {
   unsigned long tmp = val;
   return tmp&0xff;
 }
 
-char long_to_char(unsigned long val)
+static char long_to_char(unsigned long val)
 {
   return (char)(val&0xff);
 }
 
-unsigned long int_to_long(int val)
+static unsigned long int_to_long(int val)
 {
   unsigned long tmp = val;
   return tmp&0xffff;
 }
 
-int long_to_int(unsigned long val)
+static int long_to_int(unsigned long val)
 {
   return (int)(val&0xffff);
 }

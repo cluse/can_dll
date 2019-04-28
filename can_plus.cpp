@@ -1,63 +1,15 @@
-﻿// can_dll.cpp : 定义 DLL 应用程序的导出函数。
-//
+
 
 #include "stdafx.h"
 
 //#include<stdio.h>
 #include<iostream>
 #include <thread>
-#include <list>
-#include <mutex>
-using namespace std;
-#include <string>
 
-#include "can_dll.h"
-#include "SerialPort.h"
+#include "can_plus.h"
 #include "lib_str.h"
 
-static mutex read_mutex;
-
-//-------------------------------
-//static list<struct CAN_DATA> tx_list;
-static list<struct CAN_DATA> rx_list;
-
-static CSerialPort can_com;
-static string can_version;
-
-static bool flag_dev_open = false;
-static bool flag_dev_exist;
-
-static bool flag_thread_finish = false;
-static void Create_Thread();
-
-static bool flag_msg_full = false;
-//#define MSG_FULL_SEL flag_msg_full
-#define MSG_FULL_SEL true
-
-#define CMD_BUF_LEN 100
-static char c_cmd[CMD_BUF_LEN];
-static char c_cmd_tmp[CMD_BUF_LEN];
-
-static void param_init()
-{
-	flag_dev_exist = false;
-	rx_list.clear();
-}
-
-static void param_deinit()
-{
-	flag_dev_exist = false;
-	rx_list.clear();
-}
-
-static void request_version()
-{
-	can_com.WriteData((unsigned char *)"???", 3);
-}
-
-
-//-------------------------------
-bool can_open(int com)
+bool CanPort::open(int com)
 {
 	if (!flag_dev_open)
 	{
@@ -76,10 +28,10 @@ bool can_open(int com)
 	return flag_dev_open;
 }
 
-void can_close()
+void CanPort::close()
 {
-	can_del_all_send_msg();
-	can_unmonitor_all_msg();
+	del_send_msg();
+	unmonitor_msg();
 	Sleep(100);
 	can_com.ClosePort();
 	flag_thread_finish = true;
@@ -87,7 +39,7 @@ void can_close()
 	param_deinit();
 }
 
-bool can_is_ready()
+bool CanPort::is_ready()
 {
 	if (can_com.IsOpen())
 	{
@@ -97,14 +49,14 @@ bool can_is_ready()
 	return false;
 }
 
-bool can_reset()
+bool CanPort::reset()
 {
-	bool flag1 = can_del_all_send_msg();
-	bool flag2 = can_unmonitor_all_msg();
+	bool flag1 = del_send_msg();
+	bool flag2 = unmonitor_msg();
 	return flag1 & flag2;
 }
 
-bool can_send_msg(struct CAN_DATA *pCan)
+bool CanPort::send_msg(struct CAN_DATA *pCan)
 {
 	can_data_to_buf(c_cmd_tmp, pCan, MSG_FULL_SEL);
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can msg %s &,", c_cmd_tmp);
@@ -112,70 +64,79 @@ bool can_send_msg(struct CAN_DATA *pCan)
 	return ret;
 }
 
-bool can_del_send_msg(int id)
+bool CanPort::del_send_msg(int id)
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx %x &", id);
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_del_all_send_msg()
+bool CanPort::del_send_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx all &");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_monitor_msg(int id)
+bool CanPort::monitor_msg(int id)
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor %x &", id);
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_monitor_all_msg()
+bool CanPort::monitor_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor all &");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_unmonitor_all_msg()
+bool CanPort::unmonitor_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can unmonitor all &");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_output_tx_msg()
+bool CanPort::output_tx_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can output tx &");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_read_msg(struct CAN_DATA *pCan)
+bool CanPort::read_msg(struct CAN_DATA *pCan)
 {
-	bool ret = false;
-	read_mutex.lock();
 	if (!rx_list.empty())
 	{
 		struct CAN_DATA tmp = rx_list.front();
 		rx_list.pop_front();
 		can_data_copy(&tmp, pCan);
-		ret = true;
+		return true;
 	}
-	read_mutex.unlock();
-	return ret;
+	return false;
 }
 
 
-
-//-------------------------------
-static void output_debug_info(const char *info)
+//-------------------------------------------
+void CanPort::param_init()
 {
-	cout << "1- " << info;
+	flag_dev_exist = false;
+	rx_list.clear();
 }
 
-static int tx_buf_limit = 200;
-static char tx_buf[300];
-static char tx_tmp[64];
-static int tx_buf_index = 0;
-static void Get_ComRecData(char by)
+void CanPort::param_deinit()
+{
+	flag_dev_exist = false;
+	rx_list.clear();
+}
+
+void CanPort::request_version()
+{
+	can_com.WriteData((unsigned char *)"???", 3);
+}
+
+void CanPort::output_debug_info(const char *info)
+{
+	cout << info;
+}
+
+void CanPort::Get_ComRecData(char by)
 {
 	char tmp = by;
 	if (tmp != 0)
@@ -194,7 +155,7 @@ static void Get_ComRecData(char by)
 			if (index_of_str(tx_buf, "can_rx") >= 0)
 			{
 				struct CAN_DATA tmp;
-				int ret = buf_to_can_data(tx_buf + 7,&tmp, MSG_FULL_SEL);
+				int ret = buf_to_can_data(tx_buf + 7, &tmp, MSG_FULL_SEL);
 				if (ret < 0)
 				{
 					output_debug_info("err-> can_rx id");
@@ -208,8 +169,7 @@ static void Get_ComRecData(char by)
 	}
 }
 
-//------------------------------------------
-static void com_read_event()
+void CanPort::com_read_event()
 {
 	if (!can_com.IsOpen())
 	{
@@ -226,20 +186,20 @@ static void com_read_event()
 	}
 }
 
-static UINT thread_process(LPVOID pParam)
+void CanPort::thread_process()
 {
 	while (!flag_thread_finish)
 	{
 		com_read_event();
 		Sleep(10);
 	}
-	return 0;
 }
 
-static void Create_Thread()
+void CanPort::Create_Thread()
 {
 	//thread readThread(thread_process);
 	//readThread.join();
+	/*
 	DWORD dwThreadId;
 	HANDLE m_hThread = CreateThread(
 		NULL,              // default security attributes
@@ -248,5 +208,10 @@ static void Create_Thread()
 		0,             // argument to thread function 
 		0,                 // use default creation flags 
 		&dwThreadId);
+	*/
+
+	std::thread th = std::thread(&CanPort::thread_process, this);
+	th.join();
 }
+
 
