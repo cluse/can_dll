@@ -6,8 +6,8 @@
 //#include<stdio.h>
 #include<iostream>
 #include <thread>
-#include <list>
-#include <mutex>
+//#include <list>
+//#include <mutex>
 using namespace std;
 #include <string>
 
@@ -15,11 +15,11 @@ using namespace std;
 #include "SerialPort.h"
 #include "lib_str.h"
 
-static mutex read_mutex;
 
 //-------------------------------
 //static list<struct CAN_DATA> tx_list;
-static list<struct CAN_DATA> rx_list;
+//static list<struct CAN_DATA> rx_list;
+static struct CAN_FIFO rx_list;
 
 static CSerialPort can_com;
 static string can_version;
@@ -41,7 +41,7 @@ static char c_cmd_tmp[CMD_BUF_LEN];
 static void param_init()
 {
 	flag_dev_exist = false;
-	rx_list.clear();
+	can_data_fifo_init(&rx_list);
 }
 
 static void request_version()
@@ -144,19 +144,8 @@ bool can_output_tx_msg()
 
 bool can_read_msg(struct CAN_DATA *pCan)
 {
-	bool ret = false;
-	read_mutex.lock();
-	if (!rx_list.empty())
-	{
-		struct CAN_DATA tmp = rx_list.front();
-		rx_list.pop_front();
-		can_data_copy(&tmp, pCan);
-		ret = true;
-	}
-	read_mutex.unlock();
-	return ret;
+	return can_data_fifo_get(&rx_list, pCan);
 }
-
 
 
 //-------------------------------
@@ -195,7 +184,7 @@ static void Get_ComRecData(char by)
 				}
 				else
 				{
-					rx_list.push_back(tmp);
+					can_data_fifo_add(&rx_list, &tmp);
 				}
 			}
 		}
