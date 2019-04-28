@@ -44,12 +44,6 @@ static void param_init()
 	rx_list.clear();
 }
 
-static void param_deinit()
-{
-	flag_dev_exist = false;
-	rx_list.clear();
-}
-
 static void request_version()
 {
 	can_com.WriteData((unsigned char *)"???", 3);
@@ -84,7 +78,7 @@ void can_close()
 	can_com.ClosePort();
 	flag_thread_finish = true;
 	flag_dev_open = false;
-	param_deinit();
+	param_init();
 }
 
 bool can_is_ready()
