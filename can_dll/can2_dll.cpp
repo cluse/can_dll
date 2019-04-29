@@ -21,14 +21,11 @@ using namespace std;
 //static list<struct CAN_DATA> rx_list;
 static struct CAN_FIFO rx_list;
 
-static CSerialPort can_com;
+static CSerialPort can2_com;
 static string can_version;
 
 static bool flag_dev_open = false;
 static bool flag_dev_exist;
-
-static bool flag_thread_finish = false;
-static void Create_Thread();
 
 static bool flag_msg_full = false;
 //#define MSG_FULL_SEL flag_msg_full
@@ -46,44 +43,42 @@ static void param_init()
 
 static void request_version()
 {
-	can_com.WriteData((unsigned char *)"???", 3);
+	can2_com.WriteData((unsigned char *)"???", 3);
 }
 
 
 //-------------------------------
-bool can_open(int com)
+bool can2_open(int com)
 {
 	if (!flag_dev_open)
 	{
-		flag_dev_open = can_com.OpenPort(com);
+		flag_dev_open = can2_com.OpenPort(com);
 		if (flag_dev_open)
 		{
 			param_init();
-			Create_Thread();
 			request_version();
 		}
 		else
 		{
-			can_com.ClosePort();
+			can2_com.ClosePort();
 		}
 	}
 	return flag_dev_open;
 }
 
-void can_close()
+void can2_close()
 {
-	can_del_all_send_msg();
-	can_unmonitor_all_msg();
+	can2_del_all_send_msg();
+	can2_unmonitor_all_msg();
 	Sleep(100);
-	can_com.ClosePort();
-	flag_thread_finish = true;
+	can2_com.ClosePort();
 	flag_dev_open = false;
 	param_init();
 }
 
-bool can_is_ready()
+bool can2_is_ready()
 {
-	if (can_com.IsOpen())
+	if (can2_com.IsOpen())
 	{
 		request_version();
 		return flag_dev_exist;
@@ -91,67 +86,89 @@ bool can_is_ready()
 	return false;
 }
 
-bool can_reset()
+bool can2_reset(int com)
 {
-	bool flag1 = can_del_all_send_msg();
-	bool flag2 = can_unmonitor_all_msg();
-	return flag1 & flag2;
+	can2_com.ClosePort();
+	param_init();
+	flag_dev_open = can2_com.OpenPort(com);
+	if (!flag_dev_open)
+	{
+		return false;
+	}
+	request_version();
+	for (int i = 0; i < 100; i++)
+	{
+		Sleep(20);
+		if (flag_dev_exist)
+			break;
+	}
+	if (!flag_dev_exist)
+	{
+		can2_com.ClosePort();
+		return false;
+	}
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can reset &");
+	can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	Sleep(100);
+	can_data_fifo_init(&rx_list);
+	return true;
 }
 
-bool can_send_msg(struct CAN_DATA *pCan)
+bool can2_send_msg(struct CAN_DATA *pCan)
 {
 	can_data_to_buf(c_cmd_tmp, pCan, MSG_FULL_SEL);
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can msg %s &,", c_cmd_tmp);
-	bool ret = can_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	bool ret = can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
 	return ret;
 }
 
-bool can_del_send_msg(int id)
+bool can2_del_send_msg(int id)
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx %x &", id);
-	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	return can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_del_all_send_msg()
+bool can2_del_all_send_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx all &");
-	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	return can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_monitor_msg(int id)
+bool can2_monitor_msg(int id)
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor %x &", id);
-	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	return can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_monitor_all_msg()
+bool can2_monitor_all_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor all &");
-	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	return can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_unmonitor_all_msg()
+bool can2_unmonitor_all_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can unmonitor all &");
-	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	return can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_output_tx_msg()
+bool can2_output_tx_msg()
 {
 	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can output tx &");
-	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
+	return can2_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
-bool can_read_msg(struct CAN_DATA *pCan)
+bool can2_read_msg(struct CAN_DATA *pCan)
 {
 	return can_data_fifo_get(&rx_list, pCan);
 }
 
 
+
 //-------------------------------
 static void output_debug_info(const char *info)
 {
-	cout << "1- " << info;
+	cout << "2- " << info;
 }
 
 static int tx_buf_limit = 200;
@@ -192,44 +209,20 @@ static void Get_ComRecData(char by)
 }
 
 //------------------------------------------
-static void com_read_event()
+void can2_read_event()
 {
-	if (!can_com.IsOpen())
+	if (can2_com.IsOpen())
 	{
-		return;
-	}
-	int len = can_com.GetBytesInCOM();
-	for (int i = 0; i < len; i++)
-	{
-		char ch;
-		if (can_com.ReadChar(ch))
+		int len = can2_com.GetBytesInCOM();
+		for (int i = 0; i < len; i++)
 		{
-			Get_ComRecData(ch);
+			char ch;
+			if (can2_com.ReadChar(ch))
+			{
+				Get_ComRecData(ch);
+			}
 		}
 	}
 }
 
-static UINT thread_process(LPVOID pParam)
-{
-	while (!flag_thread_finish)
-	{
-		com_read_event();
-		Sleep(10);
-	}
-	return 0;
-}
-
-static void Create_Thread()
-{
-	//thread readThread(thread_process);
-	//readThread.join();
-	DWORD dwThreadId;
-	HANDLE m_hThread = CreateThread(
-		NULL,              // default security attributes
-		0,                 // use default stack size  
-		(LPTHREAD_START_ROUTINE)thread_process,        // thread function 
-		0,             // argument to thread function 
-		0,                 // use default creation flags 
-		&dwThreadId);
-}
 
