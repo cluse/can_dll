@@ -27,8 +27,6 @@ static string can_version;
 static bool flag_dev_open = false;
 static bool flag_dev_exist;
 
-static bool flag_msg_full = false;
-//#define MSG_FULL_SEL flag_msg_full
 #define MSG_FULL_SEL true
 
 #define CMD_BUF_LEN 100
