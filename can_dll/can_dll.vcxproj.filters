@@ -30,6 +30,9 @@
     <ClInclude Include="lib_str.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CanPort.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -44,10 +47,10 @@
     <ClCompile Include="SerialPort.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="can2_dll.cpp">
+    <ClCompile Include="lib_str.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="lib_str.cpp">
+    <ClCompile Include="CanPort.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

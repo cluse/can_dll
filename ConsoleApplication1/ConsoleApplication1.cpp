@@ -75,7 +75,7 @@ void error_exit(string info)
 	int tmp;
 	cout << info;
 	cin >> tmp;
-	exit;
+	exit(-1);
 }
 
 int test_type;
