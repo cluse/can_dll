@@ -54,6 +54,7 @@ public:
 	bool read_msg(struct CAN_DATA *pCan);
 
 	void read_event();
+	void detect_event();
 
 };
 

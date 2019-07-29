@@ -16,8 +16,8 @@ namespace can_monitor
         private ComSerial com = new ComSerial(); //only for com list
         private SysCan my_can = new SysCan();
         private long app_start_time;
-
-        private int list_len;
+        private bool flag_update_display;
+        //private int list_len;
         //private ListViewItem[] list_display;
 
         public Form1()
@@ -30,6 +30,20 @@ namespace can_monitor
             //list_len = my_can.GetCanBufLen();
             //list_display = new ListViewItem[list_len];
             Init_Display();
+        }
+
+        private void Init_Display()
+        {
+            for (int i = 0; i < my_can.GetCanBufLen(); i++)
+            {
+                ListViewItem item = new ListViewItem();
+                item.SubItems.Add("");
+                item.SubItems.Add("");
+                item.SubItems.Add("");
+                item.SubItems.Add("");
+                listView_Can.Items.Add(item);
+            }
+            flag_update_display = true;
         }
 
         private long getUtcNowMs()
@@ -53,7 +67,7 @@ namespace can_monitor
         }
 
         private uint timer_calc;
-        private readonly int read_time_in_once = 10;
+        private readonly int read_time_in_once = 20;
         private void timer10ms_Tick(object sender, EventArgs e)
         {
             timer_calc += 10;
@@ -147,65 +161,77 @@ namespace can_monitor
 
         private void button_Clear_Click(object sender, EventArgs e)
         {
+            Reset_Display();
             my_can.Clear();
-            Init_Display();
         }
 
-        private void Init_Display()
+        private void Reset_Display()
         {
+            listView_Can.BeginUpdate();
             for (int i = 0; i < my_can.GetCanBufLen(); i++)
             {
-                ListViewItem item = new ListViewItem();
-                item.SubItems.Add("");
-                item.SubItems.Add("");
-                item.SubItems.Add("");
-                item.SubItems.Add("");
-                listView_Can.Items.Add(item);
+                ListViewItem item;
+                item = listView_Can.Items[i];
+                item.SubItems[0].Text = "";
+                item.SubItems[1].Text = "";
+                item.SubItems[2].Text = "";
+                item.SubItems[3].Text = "";
+                item.SubItems[4].Text = "";
             }
+            listView_Can.EndUpdate();
+            flag_update_display = true;
         }
         
         private void Update_Display()
         {
-            listView_Can.BeginUpdate();
-            for (int i=0;i< my_can.GetCanBufLen(); i++)
+            if (!flag_update_display && !my_can.get_rx_msg_flag())
             {
-                Can_Data can;
-                can = my_can.GetCanBufData(i);
+                return;
+            }
+            flag_update_display = false;
+
+            listView_Can.BeginUpdate();
+            int len = my_can.GetCanBufLen();
+            for (int i=0;i< len; i++)
+            {
+                ListViewItem item;
+                item = listView_Can.Items[i];
+                item.SubItems[0].Text = i.ToString();
+
+                Can_Data can = my_can.GetCanBufData(i);
                 if (can.id > 0)
                 {
-                    ListViewItem item;
-                    item = listView_Can.Items[i];
-                    item.SubItems[0].Text = i.ToString();
-                    item.SubItems[1].Text = can.id.ToString("X");
-                    item.SubItems[2].Text = can.period.ToString("D");
-                    string info = "";
-                    for (int j=0;j< can.len; j++)
-                    {
-                        int val = can.data[j];
-                        info += val.ToString("X");
-                        info += ",";
-                    }
-                    info = info.Substring(0, info.Length - 1);
-                    item.SubItems[3].Text = info;
-                }
-                else
-                {
-                    break;
+                    fill_item_can(ref item, ref can);
                 }
             }
             listView_Can.EndUpdate();
         }
 
+        private void fill_item_can(ref ListViewItem item,ref Can_Data can)
+        {
+            item.SubItems[1].Text = can.id.ToString("X");
+            item.SubItems[2].Text = can.period.ToString("D");
+            string info = "";
+            for (int j = 0; j < can.len; j++)
+            {
+                int val = can.data[j];
+                info += val.ToString("X");
+                info += ",";
+            }
+            info = info.Substring(0, info.Length - 1);
+            item.SubItems[3].Text = info;
+        }
+
         private void button_Sort_Click(object sender, EventArgs e)
         {
-            my_can.can_list_sort(true);
-            MessageBox.Show("按ID大小排序");
+            MessageBox.Show("按ID排序");
+            my_can.list_sort(MSG_SORT.ID);
         }
 
         private void button_SortTm_Click(object sender, EventArgs e)
         {
-            my_can.can_list_sort(false);
-            MessageBox.Show("按接收数量排序");
+            MessageBox.Show("按周期排序");
+            my_can.list_sort(MSG_SORT.PERIOD);
         }
     }
 }

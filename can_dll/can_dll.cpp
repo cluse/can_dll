@@ -17,6 +17,14 @@
 CanPort can1;
 CanPort can2;
 
+
+//------------------------------------------
+const char* get_version()
+{
+	return "1.2";
+}
+
+
 //------------------------------------------
 bool can_open(int com)
 {
@@ -145,6 +153,7 @@ bool can2_read_msg(struct CAN_DATA *pCan)
 static HANDLE m_hThread = 0;
 static DWORD dwThreadId;
 static bool flag_thread_finish;
+static UINT timer_calc = 0;
 static UINT thread_process(LPVOID pParam)
 {
 	while (!flag_thread_finish)
@@ -152,6 +161,14 @@ static UINT thread_process(LPVOID pParam)
 		can1.read_event();
 		can2.read_event();
 		Sleep(10);
+
+		timer_calc++;
+		if (timer_calc > 100)
+		{
+			timer_calc = 0;
+			can1.detect_event();
+			can2.detect_event();
+		}
 	}
 	return 0;
 }

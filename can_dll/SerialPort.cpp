@@ -151,6 +151,7 @@ bool CSerialPort::WriteData(unsigned char* pData, unsigned int length)
 	{
 		return false;
 	}
+	int len = strlen((const char*)pData);
 	bResult = WriteFile(m_hComm, pData, length, &BytesToSend, NULL);
 	if (!bResult)
 	{

@@ -33,18 +33,18 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer10ms = new System.Windows.Forms.Timer(this.components);
             this.comboBox_CanCom = new System.Windows.Forms.ComboBox();
             this.button_CanCom = new System.Windows.Forms.Button();
             this.button_Clear = new System.Windows.Forms.Button();
             this.listView_Can = new System.Windows.Forms.ListView();
-            this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.button_SortId = new System.Windows.Forms.Button();
             this.button_SortTm = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
@@ -70,7 +70,7 @@
             this.toolStripStatusLabel1.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(33, 17);
-            this.toolStripStatusLabel1.Text = "V1.1";
+            this.toolStripStatusLabel1.Text = "V1.3";
             // 
             // toolStripProgressBar1
             // 
@@ -83,6 +83,26 @@
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
             this.toolStripStatusLabel2.Size = new System.Drawing.Size(51, 17);
             this.toolStripStatusLabel2.Text = "Monitor";
+            // 
+            // toolStripStatusLabel3
+            // 
+            this.toolStripStatusLabel3.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
+            this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
+            this.toolStripStatusLabel3.Size = new System.Drawing.Size(51, 17);
+            this.toolStripStatusLabel3.Text = "Can Dev";
+            // 
+            // toolStripStatusLabel4
+            // 
+            this.toolStripStatusLabel4.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
+            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
+            this.toolStripStatusLabel4.Size = new System.Drawing.Size(27, 17);
+            this.toolStripStatusLabel4.Text = "Sec";
+            // 
+            // toolStripStatusLabel5
+            // 
+            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
+            this.toolStripStatusLabel5.Size = new System.Drawing.Size(41, 17);
+            this.toolStripStatusLabel5.Text = "Status";
             // 
             // timer10ms
             // 
@@ -134,13 +154,6 @@
             this.listView_Can.UseCompatibleStateImageBehavior = false;
             this.listView_Can.View = System.Windows.Forms.View.Details;
             // 
-            // toolStripStatusLabel3
-            // 
-            this.toolStripStatusLabel3.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
-            this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
-            this.toolStripStatusLabel3.Size = new System.Drawing.Size(51, 17);
-            this.toolStripStatusLabel3.Text = "Can Dev";
-            // 
             // columnHeader1
             // 
             this.columnHeader1.Text = "TYPE";
@@ -157,19 +170,6 @@
             // 
             this.columnHeader4.Text = "DATA";
             this.columnHeader4.Width = 200;
-            // 
-            // toolStripStatusLabel4
-            // 
-            this.toolStripStatusLabel4.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
-            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
-            this.toolStripStatusLabel4.Size = new System.Drawing.Size(27, 17);
-            this.toolStripStatusLabel4.Text = "Sec";
-            // 
-            // toolStripStatusLabel5
-            // 
-            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
-            this.toolStripStatusLabel5.Size = new System.Drawing.Size(41, 17);
-            this.toolStripStatusLabel5.Text = "Status";
             // 
             // button_SortId
             // 
@@ -203,6 +203,7 @@
             this.Controls.Add(this.button_CanCom);
             this.Controls.Add(this.comboBox_CanCom);
             this.Controls.Add(this.statusStrip1);
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "CanMonitor";
             this.statusStrip1.ResumeLayout(false);

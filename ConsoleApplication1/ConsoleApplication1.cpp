@@ -21,7 +21,7 @@ using namespace ATL;
 
 #define MSG_IN_ONE_TEST 20
 
-#define ONE_TEST_TIME 100
+#define ONE_TEST_TIME 1000
 
 struct CAN_DATA msg_tx;
 struct CAN_DATA msg_rx;
@@ -110,7 +110,8 @@ void select_test_type()
 
 void random_can_tx_msg()
 {
-	msg_tx.id = rand() % 0x800;
+	int id = (rand() & 0x3ff);
+	msg_tx.id = id;
 	msg_tx.tm = 0;
 	msg_tx.len = rand() % 8 + 1;
 	for (int i = 0; i < 8; i++)
@@ -239,18 +240,30 @@ int main()
 		can_monitor_all_msg();
 
 		struct CAN_DATA tmp;
-		tmp.id = 0x321;
+		int id_buf[] = {
+			0x3aa,  
+			0x0c0,
+			0x513,
+			0x2a1,
+			0x3be,
+			0x215,
+			0x225, 0x235,
+			0x323, 0x354, 0x303,
+			0x105, 0x295, 0x125,
+		};
+		tmp.id = 0x320;
 		tmp.len = 8;
 		for (int i = 0; i < 8; i++)
 		{
 			tmp.buf[i] = 0x80 + i;
 		}
-		tmp.tm = 100;
+		tmp.tm = 10;
 
 		for (int i = 0; i < 12; i++)
 		{
-			ret = can_send_msg(&tmp);
 			tmp.id += 0x1;
+			tmp.id = id_buf[i];
+			ret = can_send_msg(&tmp);
 		}
 
 		while (1)
@@ -300,6 +313,7 @@ int main()
 					can_send_msg(&msg_tx);
 					can_data_fifo_add(&fifo_tx,&msg_tx);
 				}
+				Sleep(100);
 				calc_step++;
 				break;
 			case 1:
@@ -318,7 +332,7 @@ int main()
 					}
 					if (calc_cyc >= ONE_TEST_TIME / 2)
 					{
-						error_exit("can't read com2 time ");
+						error_exit("can't read com time");
 					}
 				}
 				calc_step++;
@@ -330,6 +344,7 @@ int main()
 					can2_send_msg(&msg_tx);
 					can_data_fifo_add(&fifo_tx, &msg_tx);
 				}
+				Sleep(100);
 				calc_step++;
 				break;
 			case 3:

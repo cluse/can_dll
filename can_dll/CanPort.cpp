@@ -33,10 +33,10 @@ bool CanPort::open(int com)
 	if (!flag_dev_open)
 	{
 		flag_dev_open = can_com.OpenPort(com);
+		flag_dev_exist = false;
 		if (flag_dev_open)
 		{
 			param_init();
-			request_version();
 		}
 		else
 		{
@@ -53,6 +53,7 @@ void CanPort::close()
 	Sleep(100);
 	can_com.ClosePort();
 	flag_dev_open = false;
+	flag_dev_exist = false;
 	param_init();
 }
 
@@ -60,7 +61,6 @@ bool CanPort::is_ready()
 {
 	if (can_com.IsOpen())
 	{
-		request_version();
 		return flag_dev_exist;
 	}
 	return false;
@@ -87,7 +87,7 @@ bool CanPort::reset(int com)
 		can_com.ClosePort();
 		return false;
 	}
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can reset &");
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can reset &\n");
 	can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 	Sleep(100);
 	can_data_fifo_init(&rx_list);
@@ -97,44 +97,44 @@ bool CanPort::reset(int com)
 bool CanPort::send_msg(struct CAN_DATA *pCan)
 {
 	can_data_to_buf(c_cmd_tmp, pCan, MSG_FULL_SEL);
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can msg %s &,", c_cmd_tmp);
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can msg %s &\n", c_cmd_tmp);
 	bool ret = can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 	return ret;
 }
 
 bool CanPort::del_send_msg(int id)
 {
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx %x &", id);
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx %x &\n", id);
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
 bool CanPort::del_send_msg()
 {
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx all &");
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can del tx all &\n");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
 bool CanPort::monitor_msg(int id)
 {
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor %x &", id);
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor %x &\n", id);
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
 bool CanPort::monitor_msg()
 {
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor all &");
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can monitor all &\n");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
 bool CanPort::unmonitor_msg()
 {
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can unmonitor all &");
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can unmonitor all &\n");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
 bool CanPort::output_tx_msg()
 {
-	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can output tx &");
+	int len_cmd = sprintf_s(c_cmd, CMD_BUF_LEN, "can output tx &\n");
 	return can_com.WriteData((unsigned char *)c_cmd, len_cmd);
 }
 
@@ -161,6 +161,7 @@ void CanPort::Get_ComRecData(char by)
 			tx_buf[tx_buf_index] = 0;
 			tx_buf_index = 0;
 			//output_debug_info(tx_buf);
+
 			if (index_of_str(tx_buf, "CAN_VER") >= 0)
 			{
 				flag_dev_exist = true;
@@ -197,5 +198,14 @@ void CanPort::read_event()
 				Get_ComRecData(ch);
 			}
 		}
+	}
+}
+
+void CanPort::detect_event()
+{
+	if (can_com.IsOpen())
+	{
+		if (!flag_dev_exist)
+			request_version();
 	}
 }

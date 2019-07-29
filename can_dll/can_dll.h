@@ -1,6 +1,9 @@
 #pragma once
 
 
+extern"C" __declspec(dllexport) const char* get_version();
+
+
 //----------------------------------
 extern"C" __declspec(dllexport) bool can_open(int com);
 
